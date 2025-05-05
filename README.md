@@ -48,8 +48,10 @@ python src/translate.py --action walking --seq_length_out 25 --iterations 10000 
 
 Finally, to visualize the samples run
 ```bash
-python src/forward_kinematics.py
+python src/forward_kinematics.py --action walking
 ```
+
+Two more flags are added to `forward_kinematics.py`. Make sure that --action flag corresponds to the action in the sample file. You can also use --pause_time to change the interval between frames (default 0.03)
 
 This should create a visualization similar to this one
 
