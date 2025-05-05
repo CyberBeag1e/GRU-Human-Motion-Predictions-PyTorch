@@ -18,10 +18,6 @@ The code in the original repository was written by [Julieta Martinez](https://gi
 Note that the following human3.6m dataset on exponential map format is not accessible yet.
 
 ```bash
-git clone https://github.com/enriccorona/human-motion-prediction-pytorch.git
-cd human-motion-prediction-pytorch
-mkdir data
-cd data
 wget http://www.cs.stanford.edu/people/ashesh/h3.6m.zip
 unzip h3.6m.zip
 rm h3.6m.zip
