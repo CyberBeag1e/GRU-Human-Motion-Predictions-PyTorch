@@ -3,9 +3,12 @@ from __future__ import division
 import argparse
 import copy
 import h5py
+import io
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import os
+from PIL import Image
 from typing import List
 
 import data_utils
@@ -18,14 +21,36 @@ parser.add_argument("--action",
                     default = "walking", 
                     type = str)
 
+parser.add_argument("--index", 
+                    dest = "index", 
+                    help = "Which sub-index of action to be visualized.", 
+                    default = 0, 
+                    type = int)
+
 parser.add_argument("--pause_time", 
                     dest = "pause_time", 
                     help = "plt.pause(pause_time): how much time to pause.", 
                     default = 0.01, 
                     type = float)
 
+parser.add_argument("--save", 
+                    dest = "save", 
+                    help = "Save the animation to a directory.", 
+                    action = "store_true", 
+                    default = False)
+
+parser.add_argument("--save_name", 
+                    dest = "save_name", 
+                    help = "The file name to be saved of the animation", 
+                    default = "", 
+                    type = str)
+
 args = parser.parse_args()
 
+save_dir = "./animation"
+
+if not os.path.exists(save_dir):
+    os.mkdir(save_dir)
 
 def fkl(angles: np.ndarray, 
         parent: np.ndarray, 
@@ -214,15 +239,17 @@ def main():
     
     # numpy implementation
     with h5py.File('samples.h5', 'r') as h5f:
-        expmap_gt = h5f[f'expmap/gt/{args.action}_0'][:]
-        expmap_pred = h5f[f'expmap/preds/{args.action}_0'][:]
+        expmap_gt = h5f[f'expmap/gt/{args.action}_{args.index}'][:]
+        expmap_pred = h5f[f'expmap/preds/{args.action}_{args.index}'][:]
 
     nframes_gt, nframes_pred = expmap_gt.shape[0], expmap_pred.shape[0]
 
     # Put them together and revert the coordinate space
-    expmap_all = revert_coordinate_space(np.vstack((expmap_gt, expmap_pred)), np.eye(3), np.zeros(3))
-    expmap_gt = expmap_all[:nframes_gt, :]
-    expmap_pred = expmap_all[nframes_gt:, :]
+    # expmap_all = revert_coordinate_space(np.vstack((expmap_gt, expmap_pred)), np.eye(3), np.zeros(3))
+    # expmap_gt = expmap_all[:nframes_gt, :]
+    # expmap_pred = expmap_all[nframes_gt:, :]
+    expmap_gt = revert_coordinate_space(expmap_gt, np.eye(3), np.zeros(3))
+    expmap_pred = revert_coordinate_space(expmap_pred, np.eye(3), np.zeros(3))
 
     # Compute 3d points for each frame
     xyz_gt, xyz_pred = np.zeros((nframes_gt, 96)), np.zeros((nframes_pred, 96))
@@ -234,23 +261,58 @@ def main():
         xyz_pred[i, :] = fkl(expmap_pred[i, :], parent, offset, rotInd, expmapInd)
 
     # === Plot and animate ===
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    ob = viz.Ax3DPose(ax)
+    # fig, ax = plt.figure()
+    # ax = fig.add_subplot(projection='3d')
+    # ob = viz.Ax3DPose(ax)
+    fig, axes = plt.subplots(1, 2, subplot_kw = {"projection": "3d"})
+    fig.set_figwidth(10)
+    fig.set_figheight(6.4)
+    ob1 = viz.Ax3DPose(axes[0])
+    ob2 = viz.Ax3DPose(axes[1])
+    frames = []
 
     # Plot the conditioning ground truth
     for i in range(nframes_gt):
-        ob.update( xyz_gt[i,:] )
+        # ob.update(xyz_gt[i,:])
+        ob1.update(xyz_gt[i,:])
+        ob2.update(xyz_pred[i,:], lcolor="#9b59b6", rcolor="#2ecc71")
         plt.show(block = False)
         fig.canvas.draw()
+
+        if args.save:
+            buf = io.BytesIO()
+            fig.savefig(buf, format = "png")
+            buf.seek(0)
+            img = Image.open(buf)
+            frames.append(img.copy())
+            buf.close()
+
         plt.pause(args.pause_time)
 
     # Plot the prediction
-    for i in range(nframes_pred):
-        ob.update( xyz_pred[i,:], lcolor="#9b59b6", rcolor="#2ecc71" )
-        plt.show(block=False)
-        fig.canvas.draw()
-        plt.pause(args.pause_time)
+    # for i in range(nframes_pred):
+    #     ob.update(xyz_pred[i,:], lcolor="#9b59b6", rcolor="#2ecc71")
+    #     plt.show(block = False)
+    #     fig.canvas.draw()
+
+    #     if args.save:
+    #         buf = io.BytesIO()
+    #         fig.savefig(buf, format = "png")
+    #         buf.seek(0)
+    #         img = Image.open(buf)
+    #         frames.append(img.copy())
+    #         buf.close()
+
+    #     plt.pause(args.pause_time)
+
+    if args.save:
+        frames[0].save(
+            os.path.join(save_dir, args.save_name + ".gif"),
+            save_all = True,
+            append_images = frames[1:],
+            duration = int(args.pause_time * 1000),
+            loop = 0
+        )
 
 if __name__ == '__main__':
-  main()
+    main()
