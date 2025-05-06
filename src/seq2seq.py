@@ -207,7 +207,7 @@ class Seq2SeqModel(nn.Module):
 
         for t in range(self.target_seq_len):
 
-            if self.teacher_forcing:
+            if self.teacher_forcing and self.training:
                 curr_inp = decoder_inputs[:, t, :].unsqueeze(1).detach()
             
             dec_output, dec_hidden = self.dec_GRU(curr_inp, dec_hidden)
@@ -235,9 +235,7 @@ class Seq2SeqModel(nn.Module):
                 pred = fc_output
             
             predictions.append(pred)
-
-            if not self.teacher_forcing:
-                curr_inp = pred.unsqueeze(1)
+            curr_inp = pred.unsqueeze(1)
         
         outputs = torch.stack(predictions, dim = 1)
 
