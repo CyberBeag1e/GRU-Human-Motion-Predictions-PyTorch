@@ -47,7 +47,10 @@ Finally, to visualize the samples run
 python src/forward_kinematics.py --action walking
 ```
 
-Two more flags are added to `forward_kinematics.py`. Make sure that --action flag corresponds to the action in the sample file. You can also use --pause_time to change the interval between frames (default 0.03)
+Several more flags are added to `forward_kinematics.py`. Use `--action` flag to specify an action and `--index` flag to specify an index among 8 samples (make sure your pretrained models contains the action you specified). You can also use `--pause_time` to change the interval between frames (default 0.03). If you want to save the animation:
+```bash
+python src/forward_kinematics.py --action walking --save --save_name your_file_name
+```
 
 This should create a visualization similar to this one
 
@@ -72,7 +75,7 @@ To train and reproduce the results of our models, use the following commands
 | Residual (SA)            | `python src/translate.py --residual_velocities --action walking` | 35s / 1000 iters |  |
 | Residual unsup. (MA)     | `python src/translate.py --residual_velocities --omit_one_hot` | 65s / 1000 iters | |
 | Residual sup. (MA)       | `python src/translate.py --residual_velocities` | 65s / 1000 iters | best quantitative.|
-| Untied       | `python src/translate.py --residual_velocities --untied` | 70s / 1000 iters | |
+| Untied                   | `python src/translate.py --residual_velocities --untied` | 70s / 1000 iters | |
 
 
 You can substitute the `--action walking` parameter for any action in
