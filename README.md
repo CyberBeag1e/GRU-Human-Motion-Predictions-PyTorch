@@ -55,7 +55,7 @@ python src/forward_kinematics.py --action walking --save --save_name your_file_n
 This should create a visualization similar to this one
 
 <p align="center">
-  <img src="./img.gif"><br><br>
+  <img src="./animation/img.gif"><br><br>
 </p>
 
 
