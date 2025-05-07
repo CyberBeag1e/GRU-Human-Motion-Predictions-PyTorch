@@ -73,9 +73,9 @@ To train and reproduce the results of our models, use the following commands
 | ---        | ---       | ---   | --- |
 | Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | 45s / 1000 iters | Realistic long-term motion, loss computed over 1 second. |
 | Residual (SA)            | `python src/translate.py --residual_velocities --action walking` | 35s / 1000 iters |  |
-| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --omit_one_hot` | 65s / 1000 iters | |
-| Residual sup. (MA)       | `python src/translate.py --residual_velocities` | 65s / 1000 iters | best quantitative.|
-| Untied                   | `python src/translate.py --residual_velocities --untied` | 70s / 1000 iters | |
+| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --omit_one_hot --learning_rate 0.005` | 65s / 1000 iters | |
+| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | 65s / 1000 iters | best quantitative.|
+| Untied                   | `python src/translate.py --residual_velocities --untied --learning_rate 0.005` | 70s / 1000 iters | |
 
 
 You can substitute the `--action walking` parameter for any action in
